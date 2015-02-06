@@ -33,6 +33,11 @@ Vagrant.configure(2) do |config|
     git clone https://github.com/donmelton/video-transcoding-scripts
     mv video-transcoding-scripts/*.sh /usr/local/bin/
     rm -rf video-transcoding-scripts
+
+    mkdir -p /home/vagrant/input
+    mkdir -p /home/vagrant/output
+    chown vagrant:vagrant /home/vagrant/input
+    chown vagrant:vagrant /home/vagrant/output
   SHELL
 
 
