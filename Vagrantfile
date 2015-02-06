@@ -28,7 +28,7 @@ Vagrant.configure(2) do |config|
     add-apt-repository -y ppa:stebbins/handbrake-releases
     add-apt-repository -y ppa:mc3man/trusty-media
     apt-get update
-    apt-get install -y make git mkvtoolnix handbrake-cli mplayer ffmpeg mp4v2-utils linux-headers-generic build-essential dkms
+    apt-get install -y make git mkvtoolnix handbrake-cli mplayer ffmpeg mp4v2-utils linux-headers-generic build-essential dkms virtualbox-guest-utils virtualbox-guest-dkms
 
     git clone https://github.com/donmelton/video-transcoding-scripts
     mv video-transcoding-scripts/*.sh /usr/local/bin/
