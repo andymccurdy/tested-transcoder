@@ -13,16 +13,13 @@ Vagrant.configure(2) do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 4096
+    vb.cpus = 4
+  end
+
+  # copy the watcher script ot the VM
+  config.vm.provision :file, :source => "watcher", :destination => "/home/vagrant/watcher"
 
   config.vm.provision "shell", inline: <<-SHELL
     add-apt-repository -y ppa:stebbins/handbrake-releases
@@ -36,9 +33,13 @@ Vagrant.configure(2) do |config|
 
     mkdir -p /home/vagrant/input
     mkdir -p /home/vagrant/output
+    mkdir -p /home/vagrant/completed-originals
     chown vagrant:vagrant /home/vagrant/input
     chown vagrant:vagrant /home/vagrant/output
-  SHELL
+    chown vagrant:vagrant /home/vagrant/completed-originals
 
+    chmod +x /home/vagrant/watcher
+    echo "* * * * * vagrant /home/vagrant/watcher" >> /etc/crontab
+  SHELL
 
 end

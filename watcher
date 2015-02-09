@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# directory containing new video to transcode
+INPUT_DIRECTORY="/home/vagrant/input"
+COMPLETED_ORIGINALS_DIRECTORY="/home/vagrant/completed-originals"
+OUTPUT_DIRECTORY="/home/vagrant/output"
+TRANSCODE_OPTIONS="--mkv --allow-dts --allow-ac3"
+# number of seconds a file must remain unmodified in the INPUT_DIRECTORY
+# before it is considered done copying. increase this value for more
+# tolerance on bad network connections.
+WRITE_THRESHOLD=30
+# path to logfile
+LOG_FILE="/home/vagrant/transcode.log"
+
+# Locking courtesy of Przemyslaw Pawelczyk
+# https://gist.github.com/przemoc/571091
+
+LOCKFILE="/var/lock/transcode"
+LOCKFD=99
+
+_lock()             { flock -$1 $LOCKFD; }
+_no_more_locking()  { _lock u; _lock xn && rm -f $LOCKFILE; }
+_prepare_locking()  { eval "exec $LOCKFD>\"$LOCKFILE\""; trap _no_more_locking EXIT; }
+
+_prepare_locking
+
+exlock_now()        { _lock xn; }  # obtain an exclusive lock immediately or fail
+exlock()            { _lock x; }   # obtain an exclusive lock
+shlock()            { _lock s; }   # obtain a shared lock
+unlock()            { _lock u; }   # drop a lock
+
+# get an exclusive lock or exit
+exlock_now || exit 1
+
+for f in $INPUT_DIRECTORY/*
+do
+    # break immediately if no files are in the directory
+    if [ "$(basename "$f")" == "*" ]
+    then
+        break
+    fi
+
+    # find the number of seconds since the file was last modified
+    seconds_since_last_write=$(expr `date +%s` - `stat --format="%Y" "$f"`)
+    # if the file was last modified more than WRITE_THRESHOLD seconds ago
+    # kick off the process
+    if [ $seconds_since_last_write -gt $WRITE_THRESHOLD ]
+    then
+        echo "Found new video: $f" >> $LOG_FILE
+
+        # run detect-crop to figure out the crop dimensions
+        crop=$(detect-crop.sh "$f" | grep "transcode-video.sh" | awk -F' ' '{print $3}')
+        transcode_command="transcode-video.sh --crop $crop $TRANSCODE_OPTIONS \"$f\""
+
+        # run the transcode
+        echo "Starting transcode with command: $transcode_command" >> $LOG_FILE
+        pushd $OUTPUT_DIRECTORY
+        eval $transcode_command
+        popd
+
+        # remove the work file
+        mv "$f" $COMPLETED_ORIGINALS_DIRECTORY
+
+        # just do one at a time, cron will re-run the script later
+        break
+    fi
+done
