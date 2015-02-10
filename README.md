@@ -36,4 +36,4 @@ should start.
 
 `config.vm.synced_folder "/Users/andy/MyMovies", "/home/vagrant/input"`
 
-This line should be placed into the Vagrantfile just above the `end`.g
+This line should be placed into the Vagrantfile just above the `end`.
