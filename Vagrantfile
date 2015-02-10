@@ -39,7 +39,7 @@ Vagrant.configure(2) do |config|
     chown vagrant:vagrant /home/vagrant/completed-originals
 
     chmod +x /home/vagrant/watcher
-    echo "* * * * * vagrant /home/vagrant/watcher" >> /etc/crontab
+    echo "* * * * * root /home/vagrant/watcher" >> /etc/crontab
   SHELL
 
 end
