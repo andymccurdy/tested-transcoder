@@ -26,7 +26,7 @@ This could be accomplished in the Vagrantfile using Vagrant's synced folders or
 by some other mechanism.
 
 
-## Vagrant Synced Folters
+## Vagrant Synced Folders
 
 It's quite easy to setup synced folders between your host OS and the Ubuntu
 system Vagrant is provisioning. This example mounts the "/Users/andy/MyMovies"
@@ -36,4 +36,4 @@ should start.
 
 `config.vm.synced_folder "/Users/andy/MyMovies", "/home/vagrant/input"`
 
-This line should be placed into the Vagrantfile just above the `end`.
+This line should be placed into the Vagrantfile just above the `end`.g
