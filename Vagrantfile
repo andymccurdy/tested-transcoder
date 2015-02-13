@@ -43,6 +43,4 @@ Vagrant.configure(2) do |config|
     # the cron script
     echo "* * * * * root /usr/local/bin/watcher" >> /etc/crontab
   SHELL
-
-  config.vm.synced_folder "/Users/andy/Downloads", "/home/vagrant/downloads"
 end
