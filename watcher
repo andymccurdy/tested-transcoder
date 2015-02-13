@@ -8,7 +8,7 @@ COMPLETED_DIRECTORY="$TRANSCODER_ROOT/completed-originals"
 # directory contained the compressed outputs
 OUTPUT_DIRECTORY="$TRANSCODER_ROOT/output"
 # standard options for the transcode-video script
-TRANSCODE_OPTIONS="--mkv --allow-dts --allow-ac3 --find-forced add --copy-all-ac3"
+TRANSCODE_OPTIONS="--mkv --slow --allow-dts --allow-ac3 --find-forced add --copy-all-ac3"
 # number of seconds a file must remain unmodified in the INPUT_DIRECTORY
 # before it is considered done copying. increase this value for more
 # tolerance on bad network connections.
