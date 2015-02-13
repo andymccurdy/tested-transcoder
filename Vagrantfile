@@ -14,13 +14,19 @@ Vagrant.configure(2) do |config|
   # Example for VirtualBox:
   #
   config.vm.provider "virtualbox" do |vb|
+    vb.name = "Tested Transcoder"
     vb.memory = 4096
     vb.cpus = 4
   end
 
-  # copy the watcher script ot the VM
-  config.vm.provision :file, :source => "watcher", :destination => "/home/vagrant/watcher"
+  # copy the watcher script in to place. always run this provisioner to get
+  # the most recent copy of the script.
+  config.vm.provision "shell", run: "always", inline: <<-SHELL
+    cp /vagrant/watcher /usr/local/bin
+    chmod +x /usr/local/bin
+  SHELL
 
+  # bootstrap the ubuntu machine
   config.vm.provision "shell", inline: <<-SHELL
     add-apt-repository -y ppa:stebbins/handbrake-releases
     add-apt-repository -y ppa:mc3man/trusty-media
@@ -31,15 +37,12 @@ Vagrant.configure(2) do |config|
     mv video-transcoding-scripts/*.sh /usr/local/bin/
     rm -rf video-transcoding-scripts
 
-    mkdir -p /home/vagrant/input
-    mkdir -p /home/vagrant/output
-    mkdir -p /home/vagrant/completed-originals
-    chown vagrant:vagrant /home/vagrant/input
-    chown vagrant:vagrant /home/vagrant/output
-    chown vagrant:vagrant /home/vagrant/completed-originals
+    # transcoder root. this is where the transcoder directory will be mounted
+    mkdir -p /media/transcoder
 
-    chmod +x /home/vagrant/watcher
-    echo "* * * * * root /home/vagrant/watcher" >> /etc/crontab
+    # the cron script
+    echo "* * * * * root /usr/local/bin/watcher" >> /etc/crontab
   SHELL
 
+  config.vm.synced_folder "/Users/andy/Downloads", "/home/vagrant/downloads"
 end

@@ -1,16 +1,21 @@
 #!/bin/bash
 
+TRANSCODER_ROOT="/media/transcoder"
 # directory containing new video to transcode
-INPUT_DIRECTORY="/home/vagrant/input"
-COMPLETED_ORIGINALS_DIRECTORY="/home/vagrant/completed-originals"
-OUTPUT_DIRECTORY="/home/vagrant/output"
+INPUT_DIRECTORY="$TRANSCODER_ROOT/input"
+# directory containing the original inputs after they've been transcoded
+COMPLETED_DIRECTORY="$TRANSCODER_ROOT/completed-originals"
+# directory contained the compressed outputs
+OUTPUT_DIRECTORY="$TRANSCODER_ROOT/output"
+# standard options for the transcode-video script
 TRANSCODE_OPTIONS="--mkv --allow-dts --allow-ac3"
 # number of seconds a file must remain unmodified in the INPUT_DIRECTORY
 # before it is considered done copying. increase this value for more
 # tolerance on bad network connections.
 WRITE_THRESHOLD=30
 # path to logfile
-LOG_FILE="/home/vagrant/transcode.log"
+PREMOUNT_LOGFILE="/home/vagrant/transcode.log"
+LOGFILE="$TRANSCODER_ROOT/transcode.log"
 
 # Locking courtesy of Przemyslaw Pawelczyk
 # https://gist.github.com/przemoc/571091
@@ -32,11 +37,34 @@ unlock()            { _lock u; }   # drop a lock
 # get an exclusive lock or exit
 exlock_now || exit 1
 
-for f in $INPUT_DIRECTORY/*
-do
+# if the input directory doesn't exist, check to see if the "transcoder"
+# share is mounted
+if [ ! -d $INPUT_DIRECTORY ]; then
+    # if there's no mount at $TRANSCODER_ROOT, attempt to mount to the
+    # "transcoder" share
+    if [ "$(mount | grep "$TRANSCODER_ROOT type vboxsf")" == "" ]; then
+        echo "Attempting to mount 'transcoder' to $TRANSCODER_ROOT..." >> $PREMOUNT_LOGFILE
+        mount -t vboxsf transcoder $TRANSCODER_ROOT || {
+            echo "Mounting failed." >> $PREMOUNT_LOGFILE
+            exit 1
+        }
+        echo "Mounting successful." >> $PREMOUNT_LOGFILE
+    fi
+
+    # now that we're mounted, create the directories and
+    # link this script and the log file to the shared volume
+    echo "Creating transcoder environment." >> $PREMOUNT_LOGFILE
+    mkdir -p $INPUT_DIRECTORY || exit 1
+    mkdir -p $OUTPUT_DIRECTORY || exit 1
+    mkdir -p $COMPLETED_DIRECTORY || exit 1
+    mv $PREMOUNT_LOGFILE $LOGFILE || exit 1
+    echo "Environment created successfully." >> $LOGFILE
+fi
+
+
+for f in $INPUT_DIRECTORY/*; do
     # break immediately if no files are in the directory
-    if [ "$(basename "$f")" == "*" ]
-    then
+    if [ "$(basename "$f")" == "*" ]; then
         break
     fi
 
@@ -44,22 +72,22 @@ do
     seconds_since_last_write=$(expr `date +%s` - `stat --format="%Y" "$f"`)
     # if the file was last modified more than WRITE_THRESHOLD seconds ago
     # kick off the process
-    if [ $seconds_since_last_write -gt $WRITE_THRESHOLD ]
-    then
-        echo "Found new video: $f" >> $LOG_FILE
+    if [ $seconds_since_last_write -gt $WRITE_THRESHOLD ]; then
+        echo "Found new video: $f" >> $LOGFILE
 
         # run detect-crop to figure out the crop dimensions
         crop=$(detect-crop.sh "$f" | grep "transcode-video.sh" | awk -F' ' '{print $3}')
         transcode_command="transcode-video.sh --crop $crop $TRANSCODE_OPTIONS \"$f\""
 
         # run the transcode
-        echo "Starting transcode with command: $transcode_command" >> $LOG_FILE
+        echo "Starting transcode with command: $transcode_command" >> $LOGFILE
         pushd $OUTPUT_DIRECTORY
         eval $transcode_command
         popd
+        echo "Transcode Completed" >> $LOGFILE
 
         # remove the work file
-        mv "$f" $COMPLETED_ORIGINALS_DIRECTORY
+        mv "$f" $COMPLETED_DIRECTORY
 
         # just do one at a time, cron will re-run the script later
         break

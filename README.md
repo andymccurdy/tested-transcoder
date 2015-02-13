@@ -10,30 +10,15 @@
 1. Clone this repo
 2. `vagrant up`
 3. `vagrant ssh`
-
-
-## Notes
-
-There are three interesting paths inside the VM:
-
-* `/home/vagrant/input` - The path being watched for new videos to be transcoded
-* `/home/vagrant/output` - The path where transcoded videos are saved to
-* `/home/vagrant/completed-originals` - The path where original video from
-input is moved to after transcoding has completed.
-
-It is expected that these paths will likely be network mounts from the host OS.
-This could be accomplished in the Vagrantfile using Vagrant's synced folders or
-by some other mechanism.
-
-
-## Vagrant Synced Folders
-
-It's quite easy to setup synced folders between your host OS and the Ubuntu
-system Vagrant is provisioning. This example mounts the "/Users/andy/MyMovies"
-directory on my Mac to "/home/vagrant/input" on the Ubuntu OS. Then when I copy
-a file to /Users/andy/MyMovies on my Mac, the transcode process automatically
-should start.
-
-`config.vm.synced_folder "/Users/andy/MyMovies", "/home/vagrant/input"`
-
-This line should be placed into the Vagrantfile just above the `end`.
+4. (optional) Install the VM on another machine, e.g., FreeNas
+5. Create a folder on the host machine where you will copy source videos to
+and collect transcoded videos from.
+6. Use the VirtualBox UI on the host machine to share this new folder with the VM.
+    1. Click the VM named "Tested Transcoder"
+    2. Click shared folders
+    3. Click the add button
+    4. Find the folder you created in the "Folder Path" field
+    5. The "Folder Name" *must* be named "transcoder"
+    6. Check the "Make Permanent" checkbox. All the other checkboxes should be unchecked.
+    7. Click OK and OK again to return to the VM selection screen.
+7. Wait about a minute. Input, Output and Completed Input folders should be created in the folder.
