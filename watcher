@@ -76,7 +76,7 @@ for f in $INPUT_DIRECTORY/*; do
         echo "Found new video: $f" >> $LOGFILE
 
         # run detect-crop to figure out the crop dimensions
-        crop=$(detect-crop.sh "$f" | grep "transcode-video.sh" | awk -F' ' '{print $3}')
+        crop=$(detect-crop.sh --values-only "$f")
         transcode_command="transcode-video.sh --crop $crop $TRANSCODE_OPTIONS \"$f\""
 
         # run the transcode
