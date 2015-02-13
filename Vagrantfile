@@ -43,4 +43,8 @@ Vagrant.configure(2) do |config|
     # the cron script
     echo "* * * * * root /usr/local/bin/watcher" >> /etc/crontab
   SHELL
+
+  if ENV["TRANSCODER_ROOT"]
+    config.vm.synced_folder ENV["TRANSCODER_ROOT"], "/media/transcoder"
+  end
 end
