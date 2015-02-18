@@ -19,14 +19,6 @@ Vagrant.configure(2) do |config|
     vb.cpus = 4
   end
 
-  # copy the transcoder.py script in to place. always run this provisioner to
-  # get the most recent copy of the script.
-  config.vm.provision "shell", run: "always", inline: <<-SHELL
-    cp /vagrant/transcoder.py /usr/local/bin
-    chmod +x /usr/local/bin/transcoder.py
-    supervisorctl reload
-  SHELL
-
   # bootstrap the ubuntu machine
   config.vm.provision "shell", inline: <<-SHELL
     add-apt-repository -y ppa:stebbins/handbrake-releases
@@ -43,8 +35,19 @@ Vagrant.configure(2) do |config|
 
     # install the transcoder's supervisor config file and reload supervisor
     cp /vagrant/supervisor-config.conf /etc/supervisor/conf.d/transcoder.conf
+    cp /vagrant/transcoder.py /usr/local/bin
+    chmod +x /usr/local/bin/transcoder.py
     supervisorctl reload
   SHELL
+
+  # copy the transcoder.py script in to place. always run this provisioner to
+  # get the most recent copy of the script.
+  config.vm.provision "shell", run: "always", inline: <<-SHELL
+    cp /vagrant/transcoder.py /usr/local/bin
+    chmod +x /usr/local/bin/transcoder.py
+    supervisorctl reload
+  SHELL
+
 
   if ENV["TRANSCODER_ROOT"]
     config.vm.synced_folder ENV["TRANSCODER_ROOT"], "/media/transcoder"
