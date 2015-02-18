@@ -19,11 +19,12 @@ Vagrant.configure(2) do |config|
     vb.cpus = 4
   end
 
-  # copy the watcher script in to place. always run this provisioner to get
-  # the most recent copy of the script.
+  # copy the transcoder.py script in to place. always run this provisioner to
+  # get the most recent copy of the script.
   config.vm.provision "shell", run: "always", inline: <<-SHELL
-    cp /vagrant/watcher /usr/local/bin
-    chmod +x /usr/local/bin
+    cp /vagrant/transcoder.py /usr/local/bin
+    chmod +x /usr/local/bin/transcoder.py
+    supervisorctl reload
   SHELL
 
   # bootstrap the ubuntu machine
@@ -31,7 +32,7 @@ Vagrant.configure(2) do |config|
     add-apt-repository -y ppa:stebbins/handbrake-releases
     add-apt-repository -y ppa:mc3man/trusty-media
     apt-get update
-    apt-get install -y make git mkvtoolnix handbrake-cli mplayer ffmpeg mp4v2-utils linux-headers-generic build-essential dkms virtualbox-guest-utils virtualbox-guest-dkms
+    apt-get install -y make git mkvtoolnix handbrake-cli mplayer ffmpeg mp4v2-utils linux-headers-generic build-essential dkms virtualbox-guest-utils virtualbox-guest-dkms supervisor
 
     git clone https://github.com/donmelton/video-transcoding-scripts
     mv video-transcoding-scripts/*.sh /usr/local/bin/
@@ -40,8 +41,9 @@ Vagrant.configure(2) do |config|
     # transcoder root. this is where the transcoder directory will be mounted
     mkdir -p /media/transcoder
 
-    # the cron script
-    echo "* * * * * root /usr/local/bin/watcher" >> /etc/crontab
+    # install the transcoder's supervisor config file and reload supervisor
+    cp /vagrant/supervisor-config.conf /etc/supervisor/conf.d/transcoder.conf
+    supervisorctl reload
   SHELL
 
   if ENV["TRANSCODER_ROOT"]
