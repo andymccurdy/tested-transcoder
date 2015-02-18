@@ -33,11 +33,10 @@ class Transcoder(object):
     # tolerance on bad network connections.
     WRITE_THRESHOLD = 30
     # path to logfile
-    LOGFILE = TRANSCODER_ROOT + '/transcode.log'
+    LOGFILE = TRANSCODER_ROOT + '/transcoder.log'
 
     def __init__(self):
         self.running = False
-        self.current_input = ''
         self.logger = None
         self.current_command = None
         self._default_handlers = {}
@@ -91,6 +90,7 @@ class Transcoder(object):
         formatter = logging.Formatter('%(asctime)s - %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
+        self.logger.info('Transcoder started and scanning for input')
 
     def check_filesystem(self):
         "Checks that the filesystem and logger is setup properly"
@@ -120,11 +120,9 @@ class Transcoder(object):
         if not self.running:
             return
         self.running = False
+        self.logger.info('Transcoder shutting down')
         if self.current_command:
             self.current_command.terminate()
-        if self.current_input:
-            # TODO: delete any output files that wre in process here
-            pass
         # logging
         logging.shutdown()
         self.logger = None
@@ -147,7 +145,6 @@ class Transcoder(object):
                 continue
             path = os.path.join(self.INPUT_DIRECTORY, filename)
             if (time.time() - os.stat(path).st_mtime) > self.WRITE_THRESHOLD:
-                self.current_input = path
                 self.process_input(path)
                 # move the source to the COMPLETED_DIRECTORY
                 dst = os.path.join(self.COMPLETED_DIRECTORY,
@@ -177,6 +174,9 @@ class Transcoder(object):
         if not work_path:
             return
 
+        # move the completed output to the output directory
+        self.logger.info('Moving completed work output %s to output directory',
+                         os.path.basename(work_path))
         output_path = os.path.join(self.OUTPUT_DIRECTORY,
                                    os.path.basename(work_path))
         shutil.move(work_path, output_path)
@@ -227,6 +227,12 @@ class Transcoder(object):
         name = os.path.basename(path)
         output_name = os.path.splitext(name)[0] + '.mkv'
         output = os.path.join(self.WORK_DIRECTORY, output_name)
+        # if these paths exist in the work directory, remove them first
+        for workpath in (output, output + '.log'):
+            if os.path.exists(workpath):
+                self.logger.info('Removing old work output: "%s"', workpath)
+                os.unlink(workpath)
+
         command_parts = [
             'transcode-video.sh',
             '--crop %s' % crop,
@@ -243,6 +249,7 @@ class Transcoder(object):
             self.logger.info('Transcoding failed for input "%s": %s',
                              name, ex.output)
             return None
+        self.logger.info('Transcoding completed for input "%s"', name)
         return output
 
 if __name__ == '__main__':
