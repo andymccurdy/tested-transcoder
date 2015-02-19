@@ -11,6 +11,16 @@ import sys
 import time
 
 
+def non_zero_min(values):
+    "Return the min value but always prefer non-zero values if they exist"
+    if len(values) == 0:
+        raise TypeError('non_zero_min expected 1 arguments, got 0')
+    non_zero_values = [i for i in values if i != 0]
+    if non_zero_values:
+        return min(non_zero_values)
+    return 0
+
+
 class Transcoder(object):
 
     # name of the share defined in virtualbox that will contain input/output video
@@ -214,19 +224,22 @@ class Transcoder(object):
             if re.findall(crop_re, ex.output):
                 out = ex.output
             else:
-                self.logger.info('detect-crop failed for input "%s" with error: %s',
+                self.logger.info('detect-crop failed for input "%s", '
+                                 'proceeding with no crop. error: %s',
                                  name, ex.output)
                 return '0:0:0:0'
 
         crops = re.findall(crop_re, out)
         if not crops:
-            self.logger.info('No crop found for input "%s", proceeding with no crop',
-                             name)
+            self.logger.info('No crop found for input "%s", '
+                             'proceeding with no crop', name)
+
             return '0:0:0:0'
         else:
-            # use the smallest crop for each edge
+            # use the smallest crop for each edge. prefer non-zero values if
+            # they exist
             dimensions = zip(*[map(int, c.split(':')) for c in crops])
-            crop = ':'.join(map(str, [min(piece) for piece in dimensions]))
+            crop = ':'.join(map(str, [non_zero_min(piece) for piece in dimensions]))
             self.logger.info('Using crop "%s" for input "%s"', crop, name)
             return crop
 
