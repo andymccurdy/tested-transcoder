@@ -15,8 +15,8 @@ Vagrant.configure(2) do |config|
   #
   config.vm.provider "virtualbox" do |vb|
     vb.name = "Tested Transcoder"
-    vb.memory = 4096
-    vb.cpus = 4
+    vb.memory = ENV["VM_MEMORY"] || 4096
+    vb.cpus = ENV["VM_CPUS"] || 4
   end
 
   # bootstrap the ubuntu machine
