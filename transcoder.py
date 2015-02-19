@@ -159,7 +159,7 @@ class Transcoder(object):
                 # last modified times don't change as data is written.
                 # fortunately these files seem to be locked such that
                 # attempting to open the file for reading raises an IOError.
-                # it seems reasonable to skip and file we can't open
+                # it seems reasonable to skip any file we can't open
                 try:
                     f = open(path, 'r')
                     f.close()
