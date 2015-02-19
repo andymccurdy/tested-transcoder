@@ -216,7 +216,7 @@ class Transcoder(object):
             else:
                 self.logger.info('detect-crop failed for input "%s" with error: %s',
                                  name, ex.output)
-                return None
+                return '0:0:0:0'
 
         crops = re.findall(crop_re, out)
         if not crops:
