@@ -256,7 +256,7 @@ class Transcoder(object):
         command_parts = [
             'transcode-video.sh',
             '--crop %s' % crop,
-            #self.parse_audio_tracks(meta),
+            self.parse_audio_tracks(meta),
             self.TRANSCODE_OPTIONS,
             '--output "%s"' % output,
             '"%s"' % path
@@ -293,6 +293,8 @@ class Transcoder(object):
         pos = meta.find('+ audio tracks:')
         track_re = r'^\s+\+\s(?P<track>[0-9]+),\s(?P<title>[^\(\n]*)'
         for line in meta[pos:].split('\n')[1:]:
+            if line.startswith('  + subtitle tracks:'):
+                break
             match = re.match(track_re, line)
             if match:
                 tracks.append({'number': match.group(1), 'title': match.group(2)})
@@ -313,6 +315,8 @@ class Transcoder(object):
                              track['number'], title)
             additional_tracks.append('--add-audio %s,"%s"' % (
                 track['number'], title.replace('"', '')))
+
+        return ' '.join(additional_tracks)
 
 
 if __name__ == '__main__':
