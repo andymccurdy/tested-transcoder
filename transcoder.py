@@ -155,6 +155,17 @@ class Transcoder(object):
                 continue
             path = os.path.join(self.INPUT_DIRECTORY, filename)
             if (time.time() - os.stat(path).st_mtime) > self.WRITE_THRESHOLD:
+                # when copying a file from windows to the VM, the filesize and
+                # last modified times don't change as data is written.
+                # fortunately these files seem to be locked such that
+                # attempting to open the file for reading raises an IOError.
+                # it seems reasonable to skip and file we can't open
+                try:
+                    f = open(path, 'r')
+                    f.close()
+                except IOError:
+                    continue
+
                 self.process_input(path)
                 # move the source to the COMPLETED_DIRECTORY
                 dst = os.path.join(self.COMPLETED_DIRECTORY,
