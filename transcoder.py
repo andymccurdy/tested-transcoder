@@ -201,17 +201,24 @@ class Transcoder(object):
         return out
 
     def detect_crop(self, path):
+        crop_re = r'[0-9]+:[0-9]+:[0-9]+:[0-9]+'
         name = os.path.basename(path)
         self.logger.info('Detecting crop for input "%s"', name)
         command = 'detect-crop.sh --values-only "%s"' % path
         try:
             out = self.execute(command)
         except subprocess.CalledProcessError as ex:
-            self.logger.info('detect-crop failed for input "%s" with error: %s',
-                             name, ex.output)
-            return None
+            # when detect-crop detects discrepancies between handbrake and
+            # mplayer, each crop is written out but detect-crop also returns
+            # an error code. if this is the case, we don't want to error out.
+            if re.findall(crop_re, ex.output):
+                out = ex.output
+            else:
+                self.logger.info('detect-crop failed for input "%s" with error: %s',
+                                 name, ex.output)
+                return None
 
-        crops = re.findall(r'[0-9]+:[0-9]+:[0-9]+:[0-9]+', out)
+        crops = re.findall(crop_re, out)
         if not crops:
             self.logger.info('No crop found for input "%s", proceeding with no crop',
                              name)
@@ -236,6 +243,7 @@ class Transcoder(object):
         command_parts = [
             'transcode-video.sh',
             '--crop %s' % crop,
+            #self.parse_audio_tracks(meta),
             self.TRANSCODE_OPTIONS,
             '--output "%s"' % output,
             '"%s"' % path
@@ -251,6 +259,48 @@ class Transcoder(object):
             return None
         self.logger.info('Transcoding completed for input "%s"', name)
         return output
+
+    def parse_audio_tracks(self, meta):
+        "Parse the meta info for audio tracks beyond the first one"
+
+        # find all the audio streams and their optional language and title data
+        streams = []
+        stream_re = r'(\s{4}Stream #[0-9]+\.[0-9]+(?:\((?P<lang>[a-z]+)\))?: Audio:.*?\n)(?=(?:\s{4}Stream)|(?:[^\s]))'
+        title_re = r'^\s{6}title\s+:\s(?P<title>[^\n]+)'
+        for stream, lang in re.findall(stream_re, meta, re.DOTALL | re.MULTILINE):
+            lang = lang = ''
+            title = ''
+            title_match = re.search(title_re, stream, re.MULTILINE)
+            if title_match:
+                title = title_match.group(1)
+            streams.append({'title': title, 'lang': lang})
+
+        # find the audio track numbers
+        tracks = []
+        pos = meta.find('+ audio tracks:')
+        track_re = r'^\s+\+\s(?P<track>[0-9]+),\s(?P<title>[^\(\n]*)'
+        for line in meta[pos:].split('\n')[1:]:
+            match = re.match(track_re, line)
+            if match:
+                tracks.append({'number': match.group(1), 'title': match.group(2)})
+
+        # assuming there's an equal number of tracks and streams, we can
+        # match up stream titles to tracks and have a nicer output
+        use_stream_titles = len(streams) == len(tracks)
+        additional_tracks = []
+
+        for i, track in enumerate(tracks[1:]):
+            title = ''
+            if use_stream_titles:
+                title = streams[i+1]['title']
+            title = title or track['title']
+            # remove any quotes in the title so we don't mess up the command
+            title = title.replace('"', '')
+            self.logger.info('Adding audio track #%s with title: %s',
+                             track['number'], title)
+            additional_tracks.append('--add-audio %s,"%s"' % (
+                track['number'], title.replace('"', '')))
+
 
 if __name__ == '__main__':
     transcoder = Transcoder()
