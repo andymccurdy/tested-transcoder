@@ -1,4 +1,4 @@
-# tested-transcoder   --- THIS IS A BETA RELEASE -- Please leave feedback on Github or at http://tested.com/forums
+# tested-transcoder   --- THIS IS A BETA RELEASE -- Please leave feedback on Github or at http://www.tested.com/forums/general-discussion/495076-transcoder-feedback/
 
 Thanks for helping us test this out! We'll have more refined instrucitons once we're sure the transcoder is ready for release.
 
@@ -39,3 +39,4 @@ and collect transcoded videos from.
 10. When the encode is in progress, you can check in on its progress by looking in the work folder and reading the end of the log. 
 11. When the encodes are complete, the new, better compressed video will be in the Output folder and the original source MKV will be in the completed-originals folder. After you've confirmed subtitles and audio tracks are correct, you can safely delete the large original file.
 12. Enjoy your new, much smaller MKV in Plex or whatever eles you like. 
+13. Please post feedback at http://www.tested.com/forums/general-discussion/495076-transcoder-feedback/
