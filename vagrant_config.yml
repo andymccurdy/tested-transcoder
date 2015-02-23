@@ -8,7 +8,7 @@ vm_name: "Tested Transcoder"
 vm_cpus: 4
 # The amount of Memory to give the VM in MB
 # This does not have to be very high as the process does not use much memory
-vm_memory: 1024
+vm_memory: 4096
 # The directory to use for placing and retriving the MKV files
 # This directory must already exist
 directory: C:\transcoder
