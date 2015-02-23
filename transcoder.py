@@ -268,6 +268,9 @@ class Transcoder(object):
             'transcode-video.sh',
             '--crop %s' % crop,
             self.parse_audio_tracks(meta),
+            '--single', # don't reencode of main audio track to stereo
+            self.parse_subtitle_tracks(meta),
+            '--no-auto-burn', # leave this to media player
             self.TRANSCODE_OPTIONS,
             '--output "%s"' % output,
             '"%s"' % path
@@ -283,6 +286,21 @@ class Transcoder(object):
             return None
         self.logger.info('Transcoding completed for input "%s"', name)
         return output
+
+    def parse_subtitle_tracks(self, meta):
+        pos = meta.find('+ subtitle tracks:')
+        track_re = r'^\s+\+\s(?P<track>[0-9]+),\s(?P<language>[^\(\n]*)'
+        # language may be useful for some kind of filter
+        subtitle_tracks = []
+        for line in meta[pos:].split('\n')[1:]:
+            if line.startswith('HandBrake'):
+                break
+            match = re.match(track_re, line)
+            if match:
+                self.logger.info('Adding subtitle track #%s (%s)',
+                                 match.group(1), match.group(2).rstrip()()
+                subtitle_tracks.append('--add-subtitle %s' % (match.group(1)))
+        return ' '.join(subtitle_tracks)
 
     def parse_audio_tracks(self, meta):
         "Parse the meta info for audio tracks beyond the first one"
@@ -308,7 +326,8 @@ class Transcoder(object):
                 break
             match = re.match(track_re, line)
             if match:
-                tracks.append({'number': match.group(1), 'title': match.group(2)})
+                tracks.append({'number': match.group(1),
+                               'title': match.group(2).rstrip()})
 
         # assuming there's an equal number of tracks and streams, we can
         # match up stream titles to tracks and have a nicer output
