@@ -37,7 +37,7 @@ class Transcoder(object):
     # directory contained the compressed outputs
     OUTPUT_DIRECTORY = TRANSCODER_ROOT + '/output'
     # standard options for the transcode-video script
-    TRANSCODE_OPTIONS = '--mkv --slow --allow-dts --allow-ac3 --find-forced add --copy-all-ac3'
+    TRANSCODE_OPTIONS = '--mkv --slow --allow-dts --allow-ac3 --copy-all-ac3 --single --no-auto-burn'
     # number of seconds a file must remain unmodified in the INPUT_DIRECTORY
     # before it is considered done copying. increase this value for more
     # tolerance on bad network connections.
@@ -268,9 +268,7 @@ class Transcoder(object):
             'transcode-video.sh',
             '--crop %s' % crop,
             self.parse_audio_tracks(meta),
-            '--single', # don't reencode of main audio track to stereo
             self.parse_subtitle_tracks(meta),
-            '--no-auto-burn', # leave this to media player
             self.TRANSCODE_OPTIONS,
             '--output "%s"' % output,
             '"%s"' % path
@@ -298,7 +296,7 @@ class Transcoder(object):
             match = re.match(track_re, line)
             if match:
                 self.logger.info('Adding subtitle track #%s (%s)',
-                                 match.group(1), match.group(2).rstrip()()
+                                 match.group(1), match.group(2).rstrip())
                 subtitle_tracks.append('--add-subtitle %s' % (match.group(1)))
         return ' '.join(subtitle_tracks)
 
