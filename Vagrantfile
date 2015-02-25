@@ -7,7 +7,7 @@ require 'yaml'
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
 
-settings = YAML.load_file 'vagrant_config.yml'
+settings = YAML.load_file 'vagrant_config.txt'
 
 Vagrant.configure(2) do |config|
   # ubuntu 14.04 64bit image

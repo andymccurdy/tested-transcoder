@@ -19,19 +19,13 @@ To rip discs, first use MakeMKV to rip only the movie, audio tracks, and subtitl
 
 1. Install the prerequisites.
 2. Verify that CPU Virtualization is turned on in your BIOS. (See below for a simple test)
-3. Navigate to your Documents folder in the terminal/command line and type `git clone https://github.com/andymccurdy/tested-transcoder/`
-4. Switch to the 'tested-transcoder' folder and run `vagrant up`.
-5. Create a folder on the host machine where you will copy source videos to and collect transcoded videos from.
-6. Use the VirtualBox UI on the host machine to share this new folder with the VM.
-    1. Click the VM named "Tested Transcoder."
-    2. (Optional) Stop machine by using `vagrant halt` and adjust CPU / memory settings to suit. Once you have saved the changes start the machine again with `vagrant up`.
-    3. Click Shared folders.
-    4. Click the add button.
-    5. Find the folder you created in the "Folder Path" field.
-    6. The "Folder Name" *must* be "transcoder" or the script will not work.
-    7. Check the "Make Permanent" checkbox (may not be visible). Verify all other checkboxes are unchecked.
-    8. Click OK twice to return to the VM selection screen.
-8. Wait approximately a minute for 'input', 'output', 'work', and 'completed-originals' folders to be created in the folder on your host machine.
+3. Create a folder on the host machine where you will copy source videos to and collect transcoded videos from.
+4. Navigate to your Documents folder in the terminal/command line and type `git clone https://github.com/andymccurdy/tested-transcoder/`.
+5. Go to the 'tested-transcoder' folder and copy `vagrant_config_example.txt` to `vagrant_config.txt`.
+6. Edit the settings in `vagrant_config.txt` in your favorite text editor.
+7. Open the command line / terminal and switch to the `tested-transcoder` folder.
+8. Run `vagrant up`.
+9. Wait for 'input', 'output', 'work', and 'completed-originals' folders to be created in the folder on your host machine.
 
 ## Usage
 
