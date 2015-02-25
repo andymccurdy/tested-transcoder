@@ -1,0 +1,14 @@
+# The name of the VM in VirtualBox
+# There must not already be a VM with this name
+vm_name: "Tested Transcoder"
+# The number of CPU Cores to give the VM
+# The more cores, the faster the transcode will process
+# This number cannot be higher than the number of cores on the host
+# This number cannot be greater than 1 if the host machine does not support CPU Virtualization
+vm_cpus: 4
+# The amount of Memory to give the VM in MB
+# This does not have to be very high as the process does not use much memory
+vm_memory: 4096
+# The directory to use for placing and retriving the MKV files
+# This directory must already exist
+directory: C:\transcoder

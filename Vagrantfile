@@ -1,10 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'yaml'
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
+
+settings = YAML.load_file 'vagrant_config.txt'
+
 Vagrant.configure(2) do |config|
   # ubuntu 14.04 64bit image
   config.vm.box = "ubuntu/trusty64"
@@ -14,9 +18,9 @@ Vagrant.configure(2) do |config|
   # Example for VirtualBox:
   #
   config.vm.provider "virtualbox" do |vb|
-    vb.name = "Tested Transcoder"
-    vb.memory = ENV["VM_MEMORY"] || 4096
-    vb.cpus = ENV["VM_CPUS"] || 4
+    vb.name = settings['vm_name']
+    vb.memory = settings['vm_memory']
+    vb.cpus = settings['vm_cpus']
   end
 
   # bootstrap the ubuntu machine
@@ -48,8 +52,5 @@ Vagrant.configure(2) do |config|
     supervisorctl reload
   SHELL
 
-
-  if ENV["TRANSCODER_ROOT"]
-    config.vm.synced_folder ENV["TRANSCODER_ROOT"], "/media/transcoder"
-  end
+  config.vm.synced_folder settings['directory'], "/media/transcoder"
 end
