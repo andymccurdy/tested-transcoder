@@ -1,5 +1,6 @@
-#tested-transcoder
-##--- THIS IS A BETA RELEASE --
+# tested-transcoder
+> --- THIS IS A BETA RELEASE --
+
 Please post feedback on github or at http://www.tested.com/forums/general-discussion/495076-transcoder-feedback/
 
 Thanks for helping us test this out! We'll have more refined instructions once we're sure the transcoder is ready for release.
